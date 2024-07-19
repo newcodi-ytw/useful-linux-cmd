@@ -1,0 +1,18 @@
+#commands
+idf build | grep "undefined reference to\|error" | grep -o 'nxp/NxpNfcRdLib[^.]*\.c' | uniq
+
+#explanation
+1. idf build
+    normal build idf project
+2. grep "undefined reference to\|error"
+    piped message to grep to collect any string match
+    1. "undefined reference to"
+    2. "error"
+3. grep -o 'nxp/NxpNfcRdLib[^.]*\.c'
+    piped the output mactched with required text
+    1. "pattern start with 'nxp/NxpNfcRdLib'
+    2. [&^.] starting
+    3. *\ anything
+    4. .c' ending
+4. uniq
+    reduce any duplicated matches
