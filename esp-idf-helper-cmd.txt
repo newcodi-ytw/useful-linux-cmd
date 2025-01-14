@@ -11,8 +11,39 @@ idf build | grep "undefined reference to\|error" | grep -o 'nxp/NxpNfcRdLib[^.]*
 3. grep -o 'nxp/NxpNfcRdLib[^.]*\.c'
     piped the output mactched with required text
     1. "pattern start with 'nxp/NxpNfcRdLib'
-    2. [&^.] starting
+    2. [^.] starting
     3. *\ anything
     4. .c' ending
 4. uniq
     reduce any duplicated matches
+
+export releaseFiles="/Users/allenyau/Works/projects/evcharger/gen-2/sw/esp32/ev-charger-2nd-gen/tools/FW_ESP32/"
+esptool.py --chip esp32s3 -p /dev/cu.usbserial-A10MLD5P write_flash --flash_mode dio --flash_freq 40m --flash_size detect \
+ 0x0000 ${releaseFiles}\bootloader.bin  \
+ 0xf000 ${releaseFiles}\partition-table.bin  \
+ 0x10000 ${releaseFiles}\nvs.bin  \
+ 0x3c000 ${releaseFiles}\nvs_key.bin  \
+ 0x3d000 ${releaseFiles}\ota_data_initial.bin  \
+ 0x3f000 ${releaseFiles}\phy_init.bin  \
+ 0x40000 ${releaseFiles}\network_app.bin  \
+ 0x450000 ${releaseFiles}\cert.bin  \
+ 0x500000 ${releaseFiles}\header.bin  \
+ 0xfe0000 ${releaseFiles}\footer.bin
+
+===========================================================================
+#commands
+export t="/Users/allenyau/Temp/nfc-pn5180a/NxpNfcRdLib_PN5180_v07.10.00_Pub/Platform/DAL/src/Linux"
+
+find $t | grep 'NxpNfcRdLib[^.]*.c$' -o | sed 's/^/nxp\//' | uniq
+
+ocpp ser wss://app.ev.energy/ctp/platform/I11OCZhg/charger CP_8c0fb0 
+
+ocpp ser wss://ctocpptest.salusconnect.io:8010/OCPP16/65af57e4e9924729317480b8/65b07f5269bd62d11cc1c31c CP_8c0fb0
+
+lte_at AT+COPS=4,2,”45403”
+
+print_input get_dip_switch
+get_ocpp_config RandomisedDelay
+set_led rgb1 255 0 0
+set_led rgb2 0 0 255
+set_led rgb3 0 0 0
