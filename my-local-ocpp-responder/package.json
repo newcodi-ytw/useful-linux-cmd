@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "name": "simple-ws-4-ocpp",
+  "version": "1.0.0",
+  "description": "a simple websocket server that mimic ocpp respond",
+  "main": "my-local-ws-server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
