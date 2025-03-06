@@ -1,0 +1,247 @@
+Okay, I've added the `drawLine`, `drawVerticalLine`, `drawHorizontalLine`, and `drawBox` functions, and they all call `updateDisplay` and `updateData` at the end. Let me test this.
+
+Okay, the basic drawing functions are working correctly, and the data area is updating with a single call to `write()` after drawing each shape. The mouse drag and clear functionalities are all still working.
+
+Finally, let me add the image upload functionality:
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>LED Matrix Demo</title>
+<style>
+#matrix-container {
+    display: inline-block;
+    border: 1px solid black;
+    user-select: none;
+}
+.led-row {
+    display: flex;
+}
+.led {
+    width: 10px;
+    height: 10px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+}
+.led.on {
+    background-color: #00f;
+}
+textarea {
+    width: 600px;
+    height: 300px;
+}
+</style>
+</head>
+<body>
+
+<h1>LED Matrix Demo</h1>
+
+<div id="matrix-container">
+</div>
+
+<br>
+<button onclick="clearMatrix()">Clear</button>
+<br>
+<button onclick="drawLine(0, 0, 46, 16)">Draw Diagonal Line</button>
+<br>
+<button onclick="drawVerticalLine(20,0,16)">Draw Vertical Line</button>
+<br>
+<button onclick="drawHorizontalLine(0,8,46)">Draw Horizontal Line</button>
+<br>
+<button onclick="drawBox(5,5,15,12)">Draw box</button>
+<br>
+<input type="file" id="image-upload" accept="image/*">
+<button onclick="handleImageUpload()">Draw Image</button>
+<br>
+<textarea id="data-display" readonly></textarea>
+
+<script>
+const matrixWidth = 47;
+const matrixHeight = 17;
+const matrixContainer = document.getElementById('matrix-container');
+const dataDisplay = document.getElementById('data-display');
+let matrixData = Array(matrixHeight).fill(null).map(() => Array(matrixWidth).fill(0));
+let isDrawing = false;
+
+function createMatrix() {
+    matrixContainer.innerHTML = '';
+    for (let i = 0; i < matrixHeight; i++) {
+        const row = document.createElement('div');
+        row.classList.add('led-row');
+        for (let j = 0; j < matrixWidth; j++) {
+            const led = document.createElement('div');
+            led.classList.add('led');
+            led.dataset.x = j;
+            led.dataset.y = i;
+            row.appendChild(led);
+        }
+        matrixContainer.appendChild(row);
+    }
+}
+
+function updateDisplay() {
+    const leds = matrixContainer.querySelectorAll('.led');
+    leds.forEach(led => {
+        const x = parseInt(led.dataset.x);
+        const y = parseInt(led.dataset.y);
+        if (matrixData[y][x] === 1) {
+            led.classList.add('on');
+        } else {
+            led.classList.remove('on');
+        }
+    });
+}
+
+function updateData() {
+    let dataString = "";
+    for(let col = 0; col < matrixWidth; col+=2){
+      let byte1 = 0;
+      let byte2 = 0;
+      for(let row = 0; row < matrixHeight; row++){
+          if(col < matrixWidth && matrixData[row][col] === 1){
+              byte1 |= (1 << row)
+          }
+          if(col + 1 < matrixWidth && matrixData[row][col+1] === 1){
+              byte2 |= (1 << row);
+          }
+      }
+        dataString += `write(0, [${byte1.toString(2).padStart(8,'0')}, ${byte2.toString(2).padStart(8,'0')}])\n`
+    }
+    dataDisplay.value = dataString;
+}
+
+function clearMatrix() {
+    matrixData = Array(matrixHeight).fill(null).map(() => Array(matrixWidth).fill(0));
+    updateDisplay();
+    updateData();
+}
+
+function drawPixel(x, y) {
+  if (x >= 0 && x < matrixWidth && y >= 0 && y < matrixHeight) {
+      matrixData[y][x] = matrixData[y][x] === 0 ? 1 : 0;
+  }
+}
+
+
+function drawLine(x1, y1, x2, y2) {
+    const dx = Math.abs(x2 - x1);
+    const dy = Math.abs(y2 - y1);
+    const sx = (x1 < x2) ? 1 : -1;
+    const sy = (y1 < y2) ? 1 : -1;
+    let err = dx - dy;
+
+    while (true) {
+        drawPixel(x1, y1);
+        if ((x1 === x2) && (y1 === y2)) break;
+        const e2 = 2 * err;
+        if (e2 > -dy) { err -= dy; x1 += sx; }
+        if (e2 < dx) { err += dx; y1 += sy; }
+    }
+    updateDisplay();
+    updateData();
+}
+
+function drawVerticalLine(x,y1,y2){
+  for(let i = y1; i <= y2; i++){
+      drawPixel(x,i);
+  }
+    updateDisplay();
+    updateData();
+}
+
+function drawHorizontalLine(x1, y, x2){
+    for(let i = x1; i <= x2; i++){
+        drawPixel(i,y);
+    }
+    updateDisplay();
+    updateData();
+}
+
+function drawBox(x1, y1, x2, y2){
+    drawHorizontalLine(x1, y1, x2);
+    drawHorizontalLine(x1, y2, x2);
+    drawVerticalLine(x1, y1, y2);
+    drawVerticalLine(x2, y1, y2);
+     updateDisplay();
+    updateData();
+}
+
+function handleImageUpload() {
+  const imageUpload = document.getElementById('image-upload');
+  const file = imageUpload.files[0];
+
+  if (!file) {
+      alert("Please select an image file.");
+      return;
+  }
+
+  if (!file.type.startsWith('image/')) {
+      alert("Please upload an image file.");
+      return;
+  }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function(){
+        const canvas = document.createElement('canvas');
+        canvas.width = matrixWidth;
+        canvas.height = matrixHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img,0,0,matrixWidth,matrixHeight);
+        const imageData = ctx.getImageData(0,0,matrixWidth, matrixHeight);
+        const data = imageData.data;
+
+        clearMatrix(); // clear the matrix first
+        for(let y = 0; y < matrixHeight; y++){
+            for(let x = 0; x < matrixWidth; x++){
+              const index = (y * matrixWidth + x) * 4;
+              const brightness = (data[index] + data[index+1] + data[index+2]) / 3;
+              if(brightness < 128){
+                matrixData[y][x] = 1
+              }
+          }
+        }
+        updateDisplay();
+        updateData();
+      };
+      img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+matrixContainer.addEventListener('mousedown', (e) => {
+    isDrawing = true;
+    drawOnMatrix(e);
+});
+
+matrixContainer.addEventListener('mousemove', (e) => {
+  if (isDrawing) {
+    drawOnMatrix(e);
+  }
+});
+
+matrixContainer.addEventListener('mouseup', () => {
+    isDrawing = false;
+     updateData();
+});
+
+matrixContainer.addEventListener('mouseleave', () => {
+    isDrawing = false;
+});
+
+function drawOnMatrix(event) {
+    const led = event.target.closest('.led');
+    if (led) {
+        const x = parseInt(led.dataset.x);
+        const y = parseInt(led.dataset.y);
+        drawPixel(x, y);
+        updateDisplay();
+    }
+}
+createMatrix();
+updateDisplay();
+</script>
+
+</body>
+</html>

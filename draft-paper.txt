@@ -1,0 +1,19 @@
+salus server, test period = 1 day, 20 hours
+
+esim, 2 disconnections
+psim, 21 disconnections
+
+psim
+
+iperf -u -c 10.11.4.66 -i 3 -t 30
+iperf -c 10.11.4.66 -i 3 -t 30
+iperf -c "iperf.it-north.net" -i 3 -t 30
+iperf -c 216.218.207.42 -i 3 -t 30 -p 5201
+iperf -c "https://dowfiles.s3.us-west-2.amazonaws.com/10K.bin" -i 3 -t 30
+iperf -c 3.5.84.125 -i 3 -t 30
+
+# Define the URL
+$url = "https://dowfiles.s3.us-west-2.amazonaws.com/10K.bin"  # Replace with your URL
+
+curl -o /dev/null -s -w 'Download speed: %{speed_download} bytes/sec\n' "https://dowfiles.s3.us-west-2.amazonaws.com/10K.bin"
+
