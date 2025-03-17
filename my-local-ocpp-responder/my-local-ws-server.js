@@ -131,8 +131,8 @@ const server = https.createServer({
     cert: fs.readFileSync('./cert.pem'),
     key: fs.readFileSync('./key.pem'),
     // passphrase: 'sspw!.3', // Replace with the password you set
-    minVersion: 'TLSv1.2',    // Enforce TLS 1.3
-    maxVersion: 'TLSv1.3'
+    // minVersion: 'TLSv1.2',    // Enforce TLS 1.3
+    maxVersion: 'TLSv1.3',
 });
 
 const wss = new WebSocket.Server({ server });
@@ -244,7 +244,7 @@ rl.on('line', (input) => {
                 clients.delete(clientId);
                 console.log(`Client ${clientId} disconnected.`);
             } else {
-                console.log(`Client ${clientId} not found.`);
+                console.log(`No connected Client.`);
             }
             break;
         }

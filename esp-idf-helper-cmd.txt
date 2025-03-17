@@ -56,7 +56,7 @@ ocpp ser ws://10.11.4.66:8080 CP_8c0fb0
 ocpp ser ws://10.11.4.66:8080 CP_8b8858
 ocpp ser wss://app.ev.energy/ctp/platform/I11OCZhg/charger CP_8b8858
 
-lte_at AT+COPS=4,2,"45403"
+lte_at "AT+COPS=4,2,\"45403\""
 lte_at AT+QCSQ
 
 print_input get_dip_switch
@@ -71,6 +71,6 @@ max r 0x6B 0
 // voltage scale, default 667
 max r 0x6C 0
 
-
+ocpp_url ws://10.11.4.66:8080 CP_8b8858
 ocpp ser ws://10.11.4.66:8080 CP_8b8858
 ocpp ser wss://10.11.4.66:8080 CP_8b8858

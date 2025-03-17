@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Admin</title>
+</head>
+<body>
+    <h1>Admin UI</h1>
+    <pre id="log"></pre>
+    
+    <button onclick="sendCommand('sendReset')">Reset</button>
+    <button onclick="sendCommand('sendUpdateFirmware')">Update Firmware</button>
+    <button onclick="sendCommand('sendRemoteStartTransaction')">Start Charging</button>
+    <button onclick="sendCommand('sendRemoteStopTransaction')">Stop Charging</button>
+    
+    <script>
+        const ws = new WebSocket('wss://localhost:8080'); // Change to your WebSocket server URL
+        const log = document.getElementById('log');
+
+        ws.onmessage = (event) => {
+            log.innerText += event.data + "\n";
+        };
+
+        function sendCommand(command) {
+            fetch(`/sendCommand?cmd=${command}`);
+        }
+    </script>
+</body>
+</html>
